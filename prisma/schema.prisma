@@ -40,6 +40,8 @@ model TutorProfile {
   totalStudents Int
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  
+  @@unique([id])
 }
 
 enum Availability {
