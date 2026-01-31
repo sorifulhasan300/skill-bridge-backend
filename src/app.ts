@@ -3,6 +3,7 @@ import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import router from "./route";
+import { errorHandler } from "./middlewares/error.middleware";
 const app: Application = express();
 
 app.use(
@@ -15,6 +16,7 @@ app.use(
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use(express.json());
 app.use(router);
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("hello world dddd");

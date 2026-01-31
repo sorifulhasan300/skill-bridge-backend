@@ -4,7 +4,7 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 
-router.get("/", middleware(UserRole.ADMIN), TutorController.allTutors);
+router.get("/", TutorController.allTutors);
 
 export const TutorRoute = {
   router,
