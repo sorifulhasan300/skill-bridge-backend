@@ -13,10 +13,22 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+  TUTOR
+}
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id            String        @id @default(uuid())
   email         String        @unique
   name          String?
+  role          Role  @default(USER)
+  status        Status @default(ACTIVE)
   tutorProfile  TutorProfile?
   emailVerified Boolean       @default(false)
   image         String?
