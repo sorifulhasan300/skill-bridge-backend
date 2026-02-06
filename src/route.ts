@@ -4,7 +4,7 @@ import { categoryRouter } from "./modules/category/category.route";
 
 const router: Router = Router();
 
-router.use("/tutor", TutorRoute);
+router.use("/tutors", TutorRoute);
 router.use("/student", TutorRoute);
 router.use("/category", categoryRouter);
 
