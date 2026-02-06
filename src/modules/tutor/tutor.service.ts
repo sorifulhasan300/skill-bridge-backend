@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-const allTutors = async (queries: string) => {
+const allTutors = async (queries: { search?: string; categories?: string; minRate?: string | number; maxRate?: string | number }) => {
   const { search, categories, minRate, maxRate } = queries;
   const where: any = {};
   if (search) {
@@ -24,10 +24,11 @@ const allTutors = async (queries: string) => {
 
   // filter by categories
   if (categories?.length) {
+    const categoryIds = categories.split(",");
     where.categories = {
       some: {
         categoryId: {
-          in: categories,
+          in: categoryIds,
         },
       },
     };
@@ -36,8 +37,8 @@ const allTutors = async (queries: string) => {
   //filter by hourly rate
   if (minRate || maxRate) {
     where.hourlyRate = {};
-    if (minRate) where.hourlyRate.gte = minRate;
-    if (maxRate) where.hourlyRate.lte = maxRate;
+    if (minRate) where.hourlyRate.gte = Number(minRate);
+    if (maxRate) where.hourlyRate.lte = Number(maxRate);
   }
   const tutors = await prisma.tutorProfile.findMany({
     where,
