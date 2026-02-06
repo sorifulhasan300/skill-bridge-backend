@@ -22,7 +22,17 @@ const getCategories = async (query: string) => {
   }
 };
 
+const deleteCategories = async (catId: string) => {
+  try {
+    const result = await prisma.category.delete({ where: { id: catId } });
+    return result;
+  } catch (error) {
+    return error;
+  }
+};
+
 export const CategoryService = {
   createCategory,
   getCategories,
+  deleteCategories,
 };
