@@ -12,7 +12,24 @@ const allTutors = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
+const createTutorProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = req.body ;
+    const result = await TutorService.createTutorProfile(data);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const TutorController = {
   allTutors,
+  createTutorProfile,
 };

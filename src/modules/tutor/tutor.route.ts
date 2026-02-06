@@ -4,6 +4,6 @@ import { TutorController } from "./tutor.controller";
 const router: Router = Router();
 
 router.get("/", TutorController.allTutors);
+router.post("/create-profile", TutorController.createTutorProfile);
 
-export const TutorRoute = router
-
+export const TutorRoute = router;
