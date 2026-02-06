@@ -30,72 +30,100 @@ model User {
   role          Role  @default(STUDENT)
   status        Status @default(ACTIVE)
   tutorProfile  TutorProfile?
-  studentProfile  StudentProfile?
+  reviews        Review[]
   emailVerified Boolean       @default(false)
   image         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   sessions      Session[]
   accounts      Account[]
-
+  students      Booking[]
   @@map("user")
 }
 
 model TutorProfile {
-  id            String       @id @default(uuid())
-  userId        String       @unique
-  user          User         @relation(fields: [userId], references: [id])
-  availability  Availability @default(AVAILABLE)
-  bio           String?
-  expertise     String[]
-  reviews       Review[]
-  bookings       Booking[]
-  hourlyRate    Int
-  averageRating Int
-  totalStudents Int
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  
-  @@unique([id])
-}
+  id        String @id @default(uuid())
 
-model StudentProfile {
-  id            String       @id @default(uuid())
-  userId        String       @unique
-  user          User         @relation(fields: [userId], references: [id])
-  status        Availability @default(AVAILABLE)
-  subject       String
-  bio           String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  reviews      Review[]
-  bookings       Booking[]
-  @@unique([id])
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+
+  bio       String? @db.Text
+  hourlyRate Int
+
+  reviews   Review[]
+  bookings  Booking[]
+  categories TutorCategory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Review {
-  id        String          @id @default(uuid())
-  student   StudentProfile  @relation(fields: [studentId], references: [id])
+  id        String @id @default(uuid())
+
+  tutorId   String
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+
   studentId String
-  tutor      TutorProfile   @relation(fields: [tutorId], references: [id])
-  tutorId    String
-  text      String
-  createdAt DateTime        @default(now())
+  student   User @relation(fields: [studentId], references: [id])
+
+  rating    Int    
+  comment   String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([tutorId, studentId])
 }
 
-model Booking{
-  id String @id @default(ulid())
-  tutor TutorProfile @relation(fields: [tutorId],references: [id]) 
-  tutorId    String
-  student StudentProfile @relation(fields: [studentId],references: [id])
-  studentId  String
-  price      Int
-  subject    String
-  department String
-  sessionDate DateTime  @default(now())
-  sessionTime DateTime  @default(now())
+model Booking {
+  id        String @id @default(uuid())
+
+  tutorId   String
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+
+  studentId String
+  student   User @relation(fields: [studentId], references: [id])
+
+  amount    Int
+  status    BookingStatus @default(CONFIRMED)
+
+  startTime DateTime
+  endTime   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tutorId, studentId, startTime])
+}
+
+
+// booking status
+enum BookingStatus {
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+
+// categories
+
+model Category{
+  id String @id @default(uuid())
+  name String @unique
+  icon String?
+  tutors TutorCategory[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model TutorCategory {
+  tutorId    String
+  categoryId String
+
+  tutor    TutorProfile @relation(fields: [tutorId], references: [id])
+  category Category     @relation(fields: [categoryId], references: [id])
+
+  @@id([tutorId, categoryId])
 }
 
 enum Availability {
