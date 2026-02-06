@@ -18,6 +18,25 @@ const createCategory = async (
   }
 };
 
+const getCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const searchValue =
+      typeof req.query.search === "string" ? req.query.search : "";
+    const result = await CategoryService.getCategories(searchValue);
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const CategoryController = {
   createCategory,
+  getCategories,
 };
