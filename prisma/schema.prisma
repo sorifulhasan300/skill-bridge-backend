@@ -49,7 +49,7 @@ model TutorProfile {
 
   bio       String? @db.Text
   hourlyRate Int
-
+  availability TutorStatus @default(AVAILABLE)
   reviews   Review[]
   bookings  Booking[]
   categories TutorCategory[]
@@ -126,7 +126,7 @@ model TutorCategory {
   @@id([tutorId, categoryId])
 }
 
-enum Availability {
+enum TutorStatus {
   AVAILABLE
   UNAVAILABLE
 }

@@ -50,8 +50,44 @@ const tutorDetails = async (
   }
 };
 
+const updateVisibility = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = req.body as { availability: string };
+    const id = req.params.id;
+    const result = await TutorService.updateVisibility(id as string, data);
+    res.status(200).json({
+      success: true,
+      message: "Visibility update successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const updateTutorProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = req.body;
+    const id = req.params.id;
+    const result = await TutorService.updateTutorProfile(id as string, data);
+    res.status(200).json({
+      success: true,
+      message: "Profile update successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export const TutorController = {
   allTutors,
   createTutorProfile,
   tutorDetails,
+  updateVisibility,
+  updateTutorProfile,
 };

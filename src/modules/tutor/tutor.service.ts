@@ -1,6 +1,11 @@
 import { prisma } from "../../lib/prisma";
 
-const allTutors = async (queries: { search?: string; categories?: string; minRate?: string | number; maxRate?: string | number }) => {
+const allTutors = async (queries: {
+  search?: string;
+  categories?: string;
+  minRate?: string | number;
+  maxRate?: string | number;
+}) => {
   const { search, categories, minRate, maxRate } = queries;
   const where: any = {};
   if (search) {
@@ -91,8 +96,43 @@ const tutorDetails = async (tutorId: string) => {
   }
 };
 
+const updateVisibility = async (
+  id: string,
+  payload: { availability: string },
+) => {
+  const { availability } = payload;
+  try {
+    const result = await prisma.tutorProfile.update({
+      where: { id },
+      data: { availability: availability as any },
+    });
+    return result;
+  } catch (error) {
+    return error;
+  }
+};
+
+const updateTutorProfile = async (
+  id: string,
+  payload: { bio?: string; hourlyRate?: number },
+) => {
+  const { bio, hourlyRate } = payload;
+  console.log(payload);
+  try {
+    const result = await prisma.tutorProfile.update({
+      where: { id },
+      data: { bio: bio as string, hourlyRate: hourlyRate as number },
+    });
+    return result;
+  } catch (error) {
+    return error;
+  }
+};
+
 export const TutorService = {
   allTutors,
   createTutorProfile,
   tutorDetails,
+  updateVisibility,
+  updateTutorProfile,
 };
