@@ -1,13 +1,20 @@
+import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 const postReview = async (payload: any) => {
-  const response = await prisma.review.create({ data: payload });
-  if (!response) {
-    throw new Error("REVIEW_NOT_FOUND");
-  }
-  return response;
-};
+  try {
+    return await prisma.review.create({ data: payload });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new Error("DUPLICATE_REVIEW");
+    }
 
+    throw error;
+  }
+};
 export const ReviewService = {
   postReview,
 };

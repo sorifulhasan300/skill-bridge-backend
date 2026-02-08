@@ -55,7 +55,11 @@ export const errorHandler = (
       .status(404)
       .json({ message: "End time must be after start time" });
   }
-
+  if (err.message === "You have already submitted a review for this item") {
+    return res
+      .status(404)
+      .json({ message: "End time must be after start time" });
+  }
   if (err.message === "REVIEW_NOT_FOUND") {
     return res.status(404).json({ message: "Review not found" });
   }
