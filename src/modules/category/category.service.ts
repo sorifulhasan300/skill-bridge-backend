@@ -1,8 +1,8 @@
 import { prisma } from "../../lib/prisma";
 
-const createCategory = async (data: any) => {
+const createCategory = async (payload: any) => {
   try {
-    const data = await prisma.category.create({ data });
+    const data = await prisma.category.create({ data: payload });
     return data;
   } catch (error) {
     return error;

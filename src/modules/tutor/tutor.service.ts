@@ -59,14 +59,14 @@ const allTutors = async (queries: {
   return tutors;
 };
 
-const createTutorProfile = async (data: {
+const createTutorProfile = async (payload: {
   userId: string;
   bio: string;
   hourlyRate: number;
   categories: string[];
 }) => {
   try {
-    const { userId, bio, hourlyRate, categories } = data;
+    const { userId, bio, hourlyRate, categories } = payload;
     const data = await prisma.tutorProfile.create({
       data: {
         userId,
