@@ -8,10 +8,10 @@ const bookings = async (req: Request, res: Response, next: NextFunction) => {
     if (!studentId) {
       return res.status(400).json({ message: "Student id not found" });
     }
-    const result = await bookingService.bookings(studentId as string);
+    const data = await bookingService.bookings(studentId as string);
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -27,10 +27,10 @@ const createBooking = async (
     if (req.body.userId !== req.user?.id) {
       return res.status(400).json({ message: "user not match" });
     }
-    const result = await bookingService.createBooking(req.body);
+    const data = await bookingService.createBooking(req.body);
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -47,11 +47,11 @@ const bookingDetails = async (
     if (!req.params.id) {
       return res.status(400).json({ message: "id is required" });
     }
-    const result = await bookingService.bookingDetails(id as string);
+    const data = await bookingService.bookingDetails(id as string);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);

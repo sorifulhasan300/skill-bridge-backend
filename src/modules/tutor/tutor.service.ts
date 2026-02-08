@@ -67,7 +67,7 @@ const createTutorProfile = async (data: {
 }) => {
   try {
     const { userId, bio, hourlyRate, categories } = data;
-    const result = await prisma.tutorProfile.create({
+    const data = await prisma.tutorProfile.create({
       data: {
         userId,
         bio,
@@ -79,7 +79,7 @@ const createTutorProfile = async (data: {
         },
       },
     });
-    return result;
+    return data;
   } catch (error) {
     return error;
   }
@@ -87,10 +87,10 @@ const createTutorProfile = async (data: {
 
 const tutorDetails = async (tutorId: string) => {
   try {
-    const result = await prisma.tutorProfile.findUnique({
+    const data = await prisma.tutorProfile.findUnique({
       where: { id: tutorId },
     });
-    return result;
+    return data;
   } catch (error) {
     return error;
   }
@@ -102,11 +102,11 @@ const updateVisibility = async (
 ) => {
   const { availability } = payload;
   try {
-    const result = await prisma.tutorProfile.update({
+    const data = await prisma.tutorProfile.update({
       where: { id },
       data: { availability: availability as any },
     });
-    return result;
+    return data;
   } catch (error) {
     return error;
   }
@@ -119,11 +119,11 @@ const updateTutorProfile = async (
   const { bio, hourlyRate } = payload;
   console.log(payload);
   try {
-    const result = await prisma.tutorProfile.update({
+    const data = await prisma.tutorProfile.update({
       where: { id },
       data: { bio: bio as string, hourlyRate: hourlyRate as number },
     });
-    return result;
+    return data;
   } catch (error) {
     return error;
   }

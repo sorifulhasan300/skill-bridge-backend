@@ -7,11 +7,11 @@ const createCategory = async (
   next: NextFunction,
 ) => {
   try {
-    const data = req.body;
-    const result = await CategoryService.createCategory(data);
+    const payload = req.body;
+    const data = await CategoryService.createCategory(payload);
     res.status(201).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -26,10 +26,10 @@ const getCategories = async (
   try {
     const searchValue =
       typeof req.query.search === "string" ? req.query.search : "";
-    const result = await CategoryService.getCategories(searchValue);
+    const data = await CategoryService.getCategories(searchValue);
     res.status(201).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -43,7 +43,7 @@ const deleteCategory = async (
 ) => {
   try {
     const catId = req.params.id;
-    const result = await CategoryService.deleteCategories(catId as string);
+    const data = await CategoryService.deleteCategories(catId as string);
     res.status(200).json({
       success: true,
       message: "category delete successfully",

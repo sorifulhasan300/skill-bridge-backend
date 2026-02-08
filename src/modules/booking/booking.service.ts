@@ -30,10 +30,10 @@ const createBooking = async (payload: {
   });
 
   if (conflict) {
-    throw new Error("Tutor already booked in this time slot");
+    throw new Error("TUTOR_ALREADY_BOOKED");
   }
   if (new Date(endTime) <= new Date(startTime)) {
-    throw new Error("End time must be after start time");
+    throw new Error("BOOKING_TIME_CONFLICT");
   }
   const response = await prisma.booking.create({
     data: {

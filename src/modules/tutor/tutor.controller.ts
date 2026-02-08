@@ -4,10 +4,10 @@ import { TutorService } from "./tutor.service";
 const allTutors = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const queries = req.query;
-    const result = await TutorService.allTutors(queries);
+    const data = await TutorService.allTutors(queries);
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -20,11 +20,11 @@ const createTutorProfile = async (
   next: NextFunction,
 ) => {
   try {
-    const data = req.body;
-    const result = await TutorService.createTutorProfile(data);
+    const payload = req.body;
+    const data = await TutorService.createTutorProfile(payload);
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -40,10 +40,10 @@ const tutorDetails = async (
 ) => {
   try {
     const tutorId = req.params.id as string;
-    const result = await TutorService.tutorDetails(tutorId);
+    const data = await TutorService.tutorDetails(tutorId);
     res.status(200).json({
       success: true,
-      data: result,
+      data: data,
     });
   } catch (error) {
     next(error);
@@ -56,9 +56,9 @@ const updateVisibility = async (
   next: NextFunction,
 ) => {
   try {
-    const data = req.body as { availability: string };
+    const payload = req.body as { availability: string };
     const id = req.params.id;
-    const result = await TutorService.updateVisibility(id as string, data);
+    const data = await TutorService.updateVisibility(id as string, payload);
     res.status(200).json({
       success: true,
       message: "Visibility update successfully",
@@ -73,9 +73,9 @@ const updateTutorProfile = async (
   next: NextFunction,
 ) => {
   try {
-    const data = req.body;
+    const payload = req.body;
     const id = req.params.id;
-    const result = await TutorService.updateTutorProfile(id as string, data);
+    const data = await TutorService.updateTutorProfile(id as string, payload);
     res.status(200).json({
       success: true,
       message: "Profile update successfully",

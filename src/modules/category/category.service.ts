@@ -2,8 +2,8 @@ import { prisma } from "../../lib/prisma";
 
 const createCategory = async (data: any) => {
   try {
-    const result = await prisma.category.create({ data });
-    return result;
+    const data = await prisma.category.create({ data });
+    return data;
   } catch (error) {
     return error;
   }
@@ -11,12 +11,12 @@ const createCategory = async (data: any) => {
 
 const getCategories = async (query: string) => {
   try {
-    const result = await prisma.category.findMany({
+    const data = await prisma.category.findMany({
       where: {
         name: { contains: query, mode: "insensitive" },
       },
     });
-    return result;
+    return data;
   } catch (error) {
     return error;
   }
@@ -24,8 +24,8 @@ const getCategories = async (query: string) => {
 
 const deleteCategories = async (catId: string) => {
   try {
-    const result = await prisma.category.delete({ where: { id: catId } });
-    return result;
+    const data = await prisma.category.delete({ where: { id: catId } });
+    return data;
   } catch (error) {
     return error;
   }

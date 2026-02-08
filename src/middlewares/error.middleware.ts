@@ -47,6 +47,18 @@ export const errorHandler = (
   if (err.message === "BOOKING_NOT_FOUND") {
     return res.status(404).json({ message: "Booking not found" });
   }
+  if (err.message === "TUTOR_ALREADY_BOOKED") {
+    return res.status(404).json({ message: "Tutor already booked this time" });
+  }
+  if (err.message === "BOOKING_TIME_CONFLICT") {
+    return res
+      .status(404)
+      .json({ message: "End time must be after start time" });
+  }
+
+  if (err.message === "REVIEW_NOT_FOUND") {
+    return res.status(404).json({ message: "Review not found" });
+  }
 
   if (err instanceof Prisma.PrismaClientInitializationError) {
     return res.status(500).json({
