@@ -1,14 +1,19 @@
 import { prisma } from "../../lib/prisma";
 
 const allUsers = async () => {
-  try {
-    const tutors = await prisma.user.findMany();
-    return tutors;
-  } catch (error) {
-    return error;
-  }
+  const tutors = await prisma.user.findMany();
+  return tutors;
+};
+
+const updateUserStatus = async (id: string, status: string) => {
+  const response = await prisma.user.update({
+    where: { id },
+    data: { status: status as string },
+  });
+  return response;
 };
 
 export const AdminServices = {
   allUsers,
+  updateUserStatus,
 };

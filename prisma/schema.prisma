@@ -18,9 +18,10 @@ enum Role {
   ADMIN
   TUTOR
 }
-enum Status {
+enum UserStatus {
   ACTIVE
   INACTIVE
+  BLOCKED
 }
 
 model User {
@@ -28,7 +29,7 @@ model User {
   email         String        @unique
   name          String?
   role          Role  @default(STUDENT)
-  status        Status @default(ACTIVE)
+  status        UserStatus @default(ACTIVE)
   tutorProfile  TutorProfile?
   reviews        Review[]
   emailVerified Boolean       @default(false)
@@ -130,12 +131,6 @@ enum TutorStatus {
   AVAILABLE
   UNAVAILABLE
 }
-
-enum status {
-  BLOCKED
-  ACTIVE
-}
-
 
 model Session {
   id        String   @id

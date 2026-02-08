@@ -5,5 +5,10 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 const router: Router = Router();
 
 router.get("/", middleware(UserRole.ADMIN), AdminController.allUsers);
+router.patch(
+  "/:id",
+  middleware(UserRole.ADMIN),
+  AdminController.updateUserStatus,
+);
 
-export const adminRoutes = router;
+export const AdminRoutes = router;
