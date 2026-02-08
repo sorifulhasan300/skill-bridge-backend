@@ -8,7 +8,7 @@ const allUsers = async () => {
 const updateUserStatus = async (id: string, status: string) => {
   const response = await prisma.user.update({
     where: { id },
-    data: { status: status as string },
+    data: { status },
   });
   return response;
 };

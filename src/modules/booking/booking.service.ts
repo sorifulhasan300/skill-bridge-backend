@@ -1,7 +1,10 @@
 import { prisma } from "../../lib/prisma";
 
-const bookings = async () => {
-  const response = await prisma.booking.findMany();
+const bookings = async (studentId: string) => {
+  const response = await prisma.booking.findMany({ where: { studentId } });
+  if (!response) {
+    throw new Error("BOOKING_NOT_FOUND");
+  }
   return response;
 };
 
@@ -13,7 +16,7 @@ const createBooking = async (payload: {
   endTime: string;
 }) => {
   const { studentId, tutorId, amount, startTime, endTime } = payload;
-  
+
   const conflict = await prisma.booking.findFirst({
     where: {
       tutorId,
@@ -44,7 +47,18 @@ const createBooking = async (payload: {
   return response;
 };
 
+const bookingDetails = async (id: string) => {
+  const response = await prisma.booking.findUnique({
+    where: { id },
+  });
+  if (!response) {
+    throw new Error("BOOKING_NOT_FOUND");
+  }
+  return response;
+};
+
 export const bookingService = {
   bookings,
   createBooking,
+  bookingDetails,
 };

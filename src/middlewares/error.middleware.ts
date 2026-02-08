@@ -44,6 +44,10 @@ export const errorHandler = (
     });
   }
 
+  if (err.message === "BOOKING_NOT_FOUND") {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+
   if (err instanceof Prisma.PrismaClientInitializationError) {
     return res.status(500).json({
       message: "Database connection failed.",
