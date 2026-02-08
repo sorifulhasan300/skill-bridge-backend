@@ -5,7 +5,7 @@ const allUsers = async () => {
   return tutors;
 };
 
-const updateUserStatus = async (id: string, status: string) => {
+const updateUserStatus = async (id: string, status: any) => {
   const response = await prisma.user.update({
     where: { id },
     data: { status },

@@ -31,8 +31,6 @@ const createTutorProfile = async (
   }
 };
 
-// get tutor details
-
 const tutorDetails = async (
   req: Request,
   res: Response,
