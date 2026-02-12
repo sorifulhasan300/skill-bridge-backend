@@ -1,3 +1,4 @@
+import { TutorStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 const allTutors = async (queries: {
@@ -48,10 +49,22 @@ const allTutors = async (queries: {
   const tutors = await prisma.tutorProfile.findMany({
     where,
     include: {
-      user: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+          status: true,
+          image: true,
+        },
+      },
       categories: {
         include: {
-          category: true,
+          category: {
+            select: {
+              name: true,
+              icon: true,
+            },
+          },
         },
       },
     },
@@ -64,10 +77,22 @@ const featuredTutors = async () => {
     where: { isFeatured: true },
     take: 6,
     include: {
-      user: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+          status: true,
+          image: true,
+        },
+      },
       categories: {
         include: {
-          category: true,
+          category: {
+            select: {
+              name: true,
+              icon: true,
+            },
+          },
         },
       },
     },
@@ -102,30 +127,41 @@ const createTutorProfile = async (payload: {
 };
 
 const tutorDetails = async (tutorId: string) => {
-  try {
-    const data = await prisma.tutorProfile.findUnique({
-      where: { id: tutorId },
-    });
-    return data;
-  } catch (error) {
-    return error;
-  }
+  const data = await prisma.tutorProfile.findUnique({
+    where: { id: tutorId },
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+          status: true,
+          image: true,
+        },
+      },
+    },
+  });
+  return data;
 };
 
 const updateVisibility = async (
   id: string,
-  payload: { availability: string },
+  userId: string,
+  newStatus: TutorStatus,
 ) => {
-  const { availability } = payload;
-  try {
-    const data = await prisma.tutorProfile.update({
-      where: { id },
-      data: { availability: availability as any },
-    });
-    return data;
-  } catch (error) {
-    return error;
+  const existTutorProfile = await prisma.tutorProfile.findUnique({
+    where: { id },
+  });
+  if (!existTutorProfile) {
+    throw new Error("Tutor profile not found");
   }
+  if (existTutorProfile.userId !== userId) {
+    throw new Error("You can only update your own profile");
+  }
+  const data = await prisma.tutorProfile.update({
+    where: { id },
+    data: { availability: newStatus },
+  });
+  return data;
 };
 
 const updateTutorProfile = async (

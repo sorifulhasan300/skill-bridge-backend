@@ -44,6 +44,9 @@ export const errorHandler = (
     });
   }
 
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
   if (err.message === "BOOKING_NOT_FOUND") {
     return res.status(404).json({ message: "Booking not found" });
   }
@@ -76,7 +79,8 @@ export const errorHandler = (
     });
   }
 
-  return res.status(500).json({
-    message: "Internal server error.",
+  return res.status(statusCode).json({
+    success: false,
+    message: message,
   });
 };

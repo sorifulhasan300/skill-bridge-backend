@@ -5,7 +5,6 @@ import { auth } from "./lib/auth";
 import router from "./route";
 import { errorHandler } from "./middlewares/error.middleware";
 const app: Application = express();
-const allowedOrigins = ["http://localhost:3000", process.env.BETTER_AUTH_URL];
 app.use(
   cors({
     origin: [

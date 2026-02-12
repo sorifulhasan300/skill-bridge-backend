@@ -1,34 +1,22 @@
 import { prisma } from "../../lib/prisma";
 
 const createCategory = async (payload: any) => {
-  try {
-    const data = await prisma.category.create({ data: payload });
-    return data;
-  } catch (error) {
-    return error;
-  }
+  const data = await prisma.category.create({ data: payload });
+  return data;
 };
 
 const getCategories = async (query: string) => {
-  try {
-    const data = await prisma.category.findMany({
-      where: {
-        name: { contains: query, mode: "insensitive" },
-      },
-    });
-    return data;
-  } catch (error) {
-    return error;
-  }
+  const data = await prisma.category.findMany({
+    where: {
+      name: { contains: query, mode: "insensitive" },
+    },
+  });
+  return data;
 };
 
 const deleteCategories = async (catId: string) => {
-  try {
-    const data = await prisma.category.delete({ where: { id: catId } });
-    return data;
-  } catch (error) {
-    return error;
-  }
+  const data = await prisma.category.delete({ where: { id: catId } });
+  return data;
 };
 
 export const CategoryService = {

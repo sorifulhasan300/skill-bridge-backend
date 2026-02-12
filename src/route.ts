@@ -7,9 +7,9 @@ import { ReviewRouter } from "./modules/reviews/review.route";
 
 const router: Router = Router();
 
-router.use("/tutors", TutorRoute);
-router.use("/student", TutorRoute);
-router.use("/category", categoryRouter);
+router.use("/api/tutors", TutorRoute);
+router.use("/api/student", TutorRoute);
+router.use("/api/category", categoryRouter);
 router.use("/api/admin/users", AdminRoutes);
 router.use("/api/bookings", BookingRoutes);
 router.use("/api/review", ReviewRouter);

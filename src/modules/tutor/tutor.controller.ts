@@ -70,9 +70,14 @@ const updateVisibility = async (
   next: NextFunction,
 ) => {
   try {
-    const payload = req.body as { availability: string };
+    const newStatus = req.body.availability;
     const id = req.params.id;
-    const data = await TutorService.updateVisibility(id as string, payload);
+    const userId = req.user?.id;
+    const data = await TutorService.updateVisibility(
+      id as string,
+      userId as string,
+      newStatus,
+    );
     res.status(200).json({
       success: true,
       message: "Visibility update successfully",
