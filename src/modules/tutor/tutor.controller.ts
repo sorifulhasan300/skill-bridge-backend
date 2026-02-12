@@ -14,6 +14,22 @@ const allTutors = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const featuredTutors = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = await TutorService.featuredTutors();
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createTutorProfile = async (
   req: Request,
   res: Response,
@@ -88,4 +104,5 @@ export const TutorController = {
   tutorDetails,
   updateVisibility,
   updateTutorProfile,
+  featuredTutors,
 };

@@ -50,6 +50,9 @@ model TutorProfile {
 
   bio       String? @db.Text
   hourlyRate Int
+  image     String?
+  isFeatured Boolean @default(false)
+
   availability TutorStatus @default(AVAILABLE)
   reviews   Review[]
   bookings  Booking[]

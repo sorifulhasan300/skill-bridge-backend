@@ -59,6 +59,22 @@ const allTutors = async (queries: {
   return tutors;
 };
 
+const featuredTutors = async () => {
+  const response = await prisma.tutorProfile.findMany({
+    where: { isFeatured: true },
+    take: 6,
+    include: {
+      user: true,
+      categories: {
+        include: {
+          category: true,
+        },
+      },
+    },
+  });
+  return response;
+};
+
 const createTutorProfile = async (payload: {
   userId: string;
   bio: string;
@@ -131,6 +147,7 @@ const updateTutorProfile = async (
 
 export const TutorService = {
   allTutors,
+  featuredTutors,
   createTutorProfile,
   tutorDetails,
   updateVisibility,
