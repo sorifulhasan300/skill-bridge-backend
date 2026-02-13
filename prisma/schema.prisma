@@ -48,14 +48,17 @@ model TutorProfile {
   userId    String @unique
   user      User   @relation(fields: [userId], references: [id])
 
+  title        String?
   bio       String? @db.Text
   hourlyRate Int
   image     String?
   isFeatured Boolean @default(false)
-
+  experience   Int?
   availability TutorStatus @default(AVAILABLE)
   timeSlots  Json?
-  
+
+  averageRating Float      @default(0.0)
+  totalReviews  Int        @default(0)
   reviews   Review[]
   bookings  Booking[]
   categories TutorCategory[]
