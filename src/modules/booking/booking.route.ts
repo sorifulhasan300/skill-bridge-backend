@@ -4,7 +4,16 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 
-router.get("/", middleware(UserRole.STUDENT), bookingController.bookings);
+router.get(
+  "/student",
+  middleware(UserRole.STUDENT),
+  bookingController.bookings,
+);
+router.get(
+  "/tutor",
+  middleware(UserRole.TUTOR),
+  bookingController.tutorBooking,
+);
 router.post("/", middleware(UserRole.STUDENT), bookingController.createBooking);
 router.get("/:id", bookingController.bookingDetails);
 

@@ -10,7 +10,6 @@ export enum UserRole {
 export const middleware = (...roles: UserRole[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.cookie;
-    console.log("cookie", req.headers.cookie);
     if (!token) {
       return res.send("you are not authenticate");
     }

@@ -51,7 +51,6 @@ model TutorProfile {
   title        String?
   bio       String? @db.Text
   hourlyRate Int
-  image     String?
   isFeatured Boolean @default(false)
   experience   Int?
   availability TutorStatus @default(AVAILABLE)

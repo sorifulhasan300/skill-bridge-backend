@@ -17,13 +17,35 @@ const bookings = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const tutorBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const tutorId = req.user?.id;
+    console.log("tutorbooking ", tutorId);
+
+    if (!tutorId) {
+      return res.status(400).json({ message: "Tutor id not found" });
+    }
+    const data = await bookingService.tutorBookings(tutorId as string);
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createBooking = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    if (req.body.userId !== req.user?.id) {
+    if (req.body.studentId !== req.user?.id) {
       return res.status(400).json({ message: "user not match" });
     }
     const data = await bookingService.createBooking(req.body);
@@ -95,4 +117,5 @@ export const bookingController = {
   createBooking,
   bookingDetails,
   updateBookingStatus,
+  tutorBooking,
 };

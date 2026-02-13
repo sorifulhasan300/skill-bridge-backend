@@ -100,32 +100,52 @@ const featuredTutors = async () => {
   return response;
 };
 
-const createTutorProfile = async (payload: {
-  userId: string;
-  bio: string;
-  hourlyRate: number;
-  categories: string[];
-}) => {
-  try {
-    const { userId, bio, hourlyRate, categories } = payload;
-    const data = await prisma.tutorProfile.create({
-      data: {
-        userId,
-        bio,
-        hourlyRate,
-        categories: {
-          create: categories.map((name) => ({
-            category: { create: { name } },
-          })),
+const createTutorProfile = async (
+  payload: {
+    title: string;
+    bio: string;
+    hourlyRate: number;
+    categories: string[];
+    timeSlots: any;
+  },
+  userId: string,
+) => {
+  const { bio, hourlyRate, categories, timeSlots, title } = payload;
+
+  const existProfile = await prisma.tutorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (existProfile) {
+    throw new Error("Tutor profile already exists");
+  }
+
+  const data = await prisma.tutorProfile.create({
+    data: {
+      userId,
+      title,
+      bio,
+      timeSlots,
+      hourlyRate,
+      categories: {
+        create: categories.map((id) => ({
+          category: {
+            connect: { id: id },
+          },
+        })),
+      },
+    },
+    include: {
+      categories: {
+        include: {
+          category: true,
         },
       },
-    });
-    return data;
-  } catch (error) {
-    return error;
-  }
-};
+    },
+  });
 
+  return data;
+};
 const tutorDetails = async (tutorId: string) => {
   const data = await prisma.tutorProfile.findUnique({
     where: { id: tutorId },

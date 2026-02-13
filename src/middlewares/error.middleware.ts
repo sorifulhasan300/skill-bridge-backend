@@ -11,27 +11,23 @@ export const errorHandler = (
     switch (err.code) {
       case "P2002":
         return res.status(409).json({
+          success: false,
           message: "Duplicate value. This already exists.",
           fields: err.meta?.target,
         });
-
       case "P2003":
         return res.status(400).json({
+          success: false,
           message: "Invalid reference. Related record not found.",
         });
-
       case "P2025":
         return res.status(404).json({
+          success: false,
           message: "Record not found.",
         });
-
-      case "P2011":
-        return res.status(400).json({
-          message: "Required field cannot be null.",
-        });
-
       default:
         return res.status(400).json({
+          success: false,
           message: "Database error.",
           code: err.code,
         });
@@ -40,43 +36,25 @@ export const errorHandler = (
 
   if (err instanceof Prisma.PrismaClientValidationError) {
     return res.status(400).json({
-      message: "Invalid request data.",
+      success: false,
+      message: "Invalid request data. Please check your input fields.",
     });
-  }
-
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-
-  if (err.message === "BOOKING_NOT_FOUND") {
-    return res.status(404).json({ message: "Booking not found" });
-  }
-  if (err.message === "TUTOR_ALREADY_BOOKED") {
-    return res.status(404).json({ message: "Tutor already booked this time" });
-  }
-  if (err.message === "BOOKING_TIME_CONFLICT") {
-    return res
-      .status(404)
-      .json({ message: "End time must be after start time" });
-  }
-  if (err.message === "You have already submitted a review for this item") {
-    return res
-      .status(404)
-      .json({ message: "End time must be after start time" });
-  }
-  if (err.message === "REVIEW_NOT_FOUND") {
-    return res.status(404).json({ message: "Review not found" });
   }
 
   if (err instanceof Prisma.PrismaClientInitializationError) {
     return res.status(500).json({
+      success: false,
       message: "Database connection failed.",
     });
   }
 
-  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-    return res.status(500).json({
-      message: "Unexpected database error.",
-    });
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Something went wrong!";
+
+  if (err.data?.code === "P2002") {
+    return res
+      .status(400)
+      .json({ success: false, message: "Category already exists!" });
   }
 
   return res.status(statusCode).json({

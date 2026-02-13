@@ -37,7 +37,11 @@ const createTutorProfile = async (
 ) => {
   try {
     const payload = req.body;
-    const data = await TutorService.createTutorProfile(payload);
+    const userId = req.user?.id;
+    const data = await TutorService.createTutorProfile(
+      payload,
+      userId as string,
+    );
     res.status(200).json({
       success: true,
       data: data,
