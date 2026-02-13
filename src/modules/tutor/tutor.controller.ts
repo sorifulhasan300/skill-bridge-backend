@@ -97,8 +97,8 @@ const updateTutorProfile = async (
 ) => {
   try {
     const payload = req.body;
-    const id = req.params.id;
-    const data = await TutorService.updateTutorProfile(id as string, payload);
+    const id = req.user?.id;
+    await TutorService.updateTutorProfile(id as string, payload);
     res.status(200).json({
       success: true,
       message: "Profile update successfully",
@@ -107,6 +107,26 @@ const updateTutorProfile = async (
     next(error);
   }
 };
+
+const getTutorProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    console.log("this is the getTutorProfile");
+    const id = req.user?.id;
+    console.log("userid", id);
+    const data = await TutorService.getTutorProfile(id as string);
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const TutorController = {
   allTutors,
   createTutorProfile,
@@ -114,4 +134,5 @@ export const TutorController = {
   updateVisibility,
   updateTutorProfile,
   featuredTutors,
+  getTutorProfile,
 };

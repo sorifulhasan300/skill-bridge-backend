@@ -186,19 +186,77 @@ const updateVisibility = async (
 
 const updateTutorProfile = async (
   id: string,
-  payload: { bio?: string; hourlyRate?: number },
+  payload: {
+    title?: string;
+    bio?: string;
+    hourlyRate?: number;
+    categories?: string[]; // Array of Category IDs
+    timeSlots?: any;
+    experience: number;
+  },
 ) => {
-  const { bio, hourlyRate } = payload;
-  console.log(payload);
-  try {
-    const data = await prisma.tutorProfile.update({
-      where: { id },
-      data: { bio: bio as string, hourlyRate: hourlyRate as number },
-    });
-    return data;
-  } catch (error) {
-    return error;
+  const { title, bio, hourlyRate, categories, experience } = payload;
+
+  const existProfile = await prisma.tutorProfile.findUnique({
+    where: {
+      userId: id,
+    },
+  });
+  if (!existProfile) {
+    throw new Error("Tutor profile not found");
   }
+  await prisma.tutorProfile.update({
+    where: { id: existProfile?.id },
+    data: {
+      ...(title !== undefined && { title }),
+      ...(bio !== undefined && { bio }),
+      ...(hourlyRate !== undefined && { hourlyRate }),
+      ...(experience !== undefined && { experience }),
+      ...(categories && {
+        categories: {
+          deleteMany: {},
+          create: categories.map((catId) => ({
+            category: {
+              connect: { id: catId },
+            },
+          })),
+        },
+      }),
+    },
+    include: {
+      categories: true,
+    },
+  });
+};
+
+const getTutorProfile = async (id: string) => {
+  const tutorProfile = await prisma.tutorProfile.findUnique({
+    where: {
+      userId: id,
+    },
+    select: {
+      title: true,
+      hourlyRate: true,
+      experience: true,
+      bio: true,
+      categories: {
+        select: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!tutorProfile) {
+    throw new Error("Tutor profile not found");
+  }
+
+  return tutorProfile;
 };
 
 export const TutorService = {
@@ -208,4 +266,5 @@ export const TutorService = {
   tutorDetails,
   updateVisibility,
   updateTutorProfile,
+  getTutorProfile,
 };

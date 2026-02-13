@@ -74,13 +74,24 @@ const updateBookingStatus = async (
   newStatus: BookingStatus,
 ) => {
   const existingBooking = await prisma.booking.findUnique({
-    where: { id: bookingId },
+    where: {
+      id: bookingId,
+      tutor: {
+        userId,
+      },
+    },
+    include: {
+      tutor: {
+        select: { userId: true },
+      },
+    },
   });
+  console.log(existingBooking?.tutor.userId);
   if (!existingBooking) {
     throw new Error("Booking not found");
   }
   if (
-    existingBooking.tutorId !== userId &&
+    existingBooking.tutor.userId !== userId &&
     existingBooking.studentId !== userId
   ) {
     throw new Error("You are not authorized to update this booking");
@@ -93,7 +104,7 @@ const updateBookingStatus = async (
       `Cannot update a booking that is already ${existingBooking.status}`,
     );
   }
-  if (newStatus === "COMPLETED" && existingBooking.tutorId !== userId) {
+  if (newStatus === "COMPLETED" && existingBooking.tutor.userId !== userId) {
     throw new Error("Only tutors can mark a booking as completed");
   }
   const res = await prisma.booking.update({

@@ -20,8 +20,13 @@ router.patch(
   middleware(UserRole.TUTOR),
   TutorController.updateVisibility,
 );
+router.get(
+  "/tutor/profile",
+  middleware(UserRole.TUTOR),
+  TutorController.getTutorProfile,
+);
 router.patch(
-  "/:id/profile",
+  "/update/profile",
   middleware(UserRole.TUTOR),
   TutorController.updateTutorProfile,
 );
