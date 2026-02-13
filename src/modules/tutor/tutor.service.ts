@@ -195,8 +195,8 @@ const updateTutorProfile = async (
     experience: number;
   },
 ) => {
-  const { title, bio, hourlyRate, categories, experience } = payload;
-
+  const { title, bio, hourlyRate, categories, experience, timeSlots } = payload;
+  console.log("time slot", timeSlots);
   const existProfile = await prisma.tutorProfile.findUnique({
     where: {
       userId: id,
@@ -212,6 +212,8 @@ const updateTutorProfile = async (
       ...(bio !== undefined && { bio }),
       ...(hourlyRate !== undefined && { hourlyRate }),
       ...(experience !== undefined && { experience }),
+      ...(timeSlots !== undefined && { timeSlots }),
+
       ...(categories && {
         categories: {
           deleteMany: {},
@@ -239,6 +241,7 @@ const getTutorProfile = async (id: string) => {
       hourlyRate: true,
       experience: true,
       bio: true,
+      timeSlots: true,
       categories: {
         select: {
           category: {
