@@ -128,6 +128,32 @@ const updateBookingStatus = async (
   }
 };
 
+const attendBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.user?.id;
+  const bookingId = req.params.id;
+  const { isAttending } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  try {
+    await bookingService.attendBooking(
+      bookingId as string,
+      userId as string,
+      isAttending,
+    );
+    res.status(200).json({
+      success: true,
+      message: isAttending ? "Student attended" : "Student left the session",
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
 export const bookingController = {
   bookings,
   createBooking,
@@ -135,4 +161,5 @@ export const bookingController = {
   updateBookingStatus,
   tutorBooking,
   adminBooking,
+  attendBooking,
 };

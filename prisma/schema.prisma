@@ -91,7 +91,7 @@ model Booking {
 
   studentId   String
   student     User          @relation(fields: [studentId], references: [id])
-
+  studentAttend Boolean @default(false)    
   
   slotId      String        @default("temp-id") 
   day         String        @default("temp-day")       

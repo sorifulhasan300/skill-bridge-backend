@@ -28,4 +28,9 @@ router.put(
   bookingController.updateBookingStatus,
 );
 
+router.patch(
+  "/:id/attend",
+  middleware(UserRole.STUDENT),
+  bookingController.attendBooking,
+);
 export const BookingRoutes = router;

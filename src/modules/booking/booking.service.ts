@@ -88,48 +88,74 @@ const updateBookingStatus = async (
   userId: string,
   newStatus: BookingStatus,
 ) => {
-  const existingBooking = await prisma.booking.findUnique({
+  console.log(newStatus);
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { tutor: true },
+  });
+
+  if (!booking) throw new Error("Booking not found");
+
+  const shouldReleaseSlot =
+    newStatus === "CANCELLED" || newStatus === "COMPLETED";
+
+  return await prisma.$transaction(async (tx) => {
+    const updatedBooking = await tx.booking.update({
+      where: { id: bookingId },
+      data: { status: newStatus as any },
+    });
+
+    if (shouldReleaseSlot) {
+      const timeSlots = booking.tutor.timeSlots as any;
+      const dayKey = booking.day.toLowerCase().slice(0, 3);
+
+      const updatedDaySlots = timeSlots[dayKey].map((slot: any) => {
+        if (slot.id === booking.slotId) {
+          return { ...slot, isBooked: false };
+        }
+        return slot;
+      });
+
+      await tx.tutorProfile.update({
+        where: { id: booking.tutorId },
+        data: {
+          timeSlots: {
+            ...timeSlots,
+            [dayKey]: updatedDaySlots,
+          },
+        },
+      });
+    }
+
+    return updatedBooking;
+  });
+};
+
+const attendBooking = async (
+  bookingId: string,
+  userId: string,
+  isAttending: boolean,
+) => {
+  console.log(isAttending, bookingId, userId);
+  const booking = await prisma.booking.findFirst({
     where: {
       id: bookingId,
-      tutor: {
-        userId,
-      },
-    },
-    include: {
-      tutor: {
-        select: { userId: true },
-      },
+      studentId: userId,
     },
   });
-  console.log(existingBooking?.tutor.userId);
-  if (!existingBooking) {
-    throw new Error("Booking not found");
+
+  if (!booking) {
+    throw new Error("Booking not found or unauthorized");
   }
-  if (
-    existingBooking.tutor.userId !== userId &&
-    existingBooking.studentId !== userId
-  ) {
-    throw new Error("You are not authorized to update this booking");
-  }
-  if (
-    existingBooking.status === "CANCELLED" ||
-    existingBooking.status === "COMPLETED"
-  ) {
-    throw new Error(
-      `Cannot update a booking that is already ${existingBooking.status}`,
-    );
-  }
-  if (newStatus === "COMPLETED" && existingBooking.tutor.userId !== userId) {
-    throw new Error("Only tutors can mark a booking as completed");
-  }
-  const res = await prisma.booking.update({
+
+  return await prisma.booking.update({
     where: { id: bookingId },
     data: {
-      status: newStatus,
+      studentAttend: isAttending,
     },
   });
-  return res;
 };
+
 export const bookingService = {
   bookings,
   createBooking,
@@ -137,4 +163,5 @@ export const bookingService = {
   updateBookingStatus,
   tutorBookings,
   adminBooking,
+  attendBooking,
 };
