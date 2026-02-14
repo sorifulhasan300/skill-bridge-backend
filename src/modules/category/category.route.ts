@@ -4,6 +4,12 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 router.post("/", middleware(UserRole.ADMIN), CategoryController.createCategory);
+router.patch(
+  "/:id/update",
+  middleware(UserRole.ADMIN),
+  CategoryController.updateCategory,
+);
+
 router.get(
   "/",
   middleware(UserRole.ADMIN, UserRole.TUTOR),

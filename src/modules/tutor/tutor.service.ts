@@ -158,6 +158,21 @@ const tutorDetails = async (tutorId: string) => {
           image: true,
         },
       },
+
+      reviews: {
+        take: 4,
+        select: {
+          comment: true,
+          rating: true,
+          student: {
+            select: {
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      },
     },
   });
   return data;

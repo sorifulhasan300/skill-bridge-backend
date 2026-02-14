@@ -4,10 +4,10 @@ import { ReviewService } from "./reviews.service";
 const postReview = async (req: Request, res: Response, next: NextFunction) => {
   const payload = req.body;
   try {
-    const data = await ReviewService.postReview(payload);
+    await ReviewService.postReview(payload);
     res.status(201).json({
       success: true,
-      data: data,
+      message: "Review successfully created",
     });
   } catch (error) {
     next(error);

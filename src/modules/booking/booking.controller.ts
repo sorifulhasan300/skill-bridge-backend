@@ -64,10 +64,10 @@ const createBooking = async (
     if (req.body.studentId !== req.user?.id) {
       return res.status(400).json({ message: "user not match" });
     }
-    const data = await bookingService.createBooking(req.body);
+    await bookingService.createBooking(req.body);
     res.status(200).json({
       success: true,
-      data: data,
+      data: "booking create successfully",
     });
   } catch (error) {
     next(error);

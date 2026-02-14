@@ -4,7 +4,24 @@ const createCategory = async (payload: any) => {
   const data = await prisma.category.create({ data: payload });
   return data;
 };
-
+const updateCategory = async (
+  id: string,
+  payload: { name?: string; icon?: string },
+) => {
+  const isExist = await prisma.category.findUnique({
+    where: { id },
+  });
+  console.log(payload);
+  if (!isExist) {
+    throw new Error("Category not found!");
+  }
+  await prisma.category.update({
+    where: {
+      id: id,
+    },
+    data: payload,
+  });
+};
 const getCategories = async (query: string) => {
   const data = await prisma.category.findMany({
     where: {
@@ -23,4 +40,5 @@ export const CategoryService = {
   createCategory,
   getCategories,
   deleteCategories,
+  updateCategory,
 };

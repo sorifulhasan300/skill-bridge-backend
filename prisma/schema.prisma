@@ -84,24 +84,27 @@ model Review {
 }
 
 model Booking {
-  id        String @id @default(uuid())
+  id          String        @id @default(uuid())
 
-  tutorId   String
-  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+  tutorId     String
+  tutor       TutorProfile  @relation(fields: [tutorId], references: [id])
 
-  studentId String
-  student   User @relation(fields: [studentId], references: [id])
+  studentId   String
+  student     User          @relation(fields: [studentId], references: [id])
 
-  amount    Int
-  status    BookingStatus @default(CONFIRMED)
+  
+  slotId      String        @default("temp-id") 
+  day         String        @default("temp-day")       
+  startTime   String       
+  endTime     String       
+  
+  amount      Int          
+  status      BookingStatus @default(CONFIRMED)
 
-  startTime DateTime
-  endTime   DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([tutorId, studentId, startTime])
+  @@unique([tutorId, slotId, day]) 
 }
 
 

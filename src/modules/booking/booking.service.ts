@@ -27,48 +27,53 @@ const adminBooking = async () => {
   return response;
 };
 
-const createBooking = async (payload: {
-  studentId: string;
+export const createBooking = async (payload: {
   tutorId: string;
-  amount: number;
-  startTime: string;
-  endTime: string;
+  day: string;
+  slotId: string;
+  studentId: string;
 }) => {
-  const { studentId, tutorId, amount, startTime, endTime } = payload;
+  const { tutorId, day, slotId, studentId } = payload;
 
-  const conflict = await prisma.booking.findFirst({
-    where: {
-      tutorId,
-      OR: [
-        {
-          startTime: { lt: new Date(endTime) },
-          endTime: { gt: new Date(startTime) },
+  const tutor = await prisma.tutorProfile.findUnique({
+    where: { id: tutorId },
+    select: { timeSlots: true, hourlyRate: true },
+  });
+
+  if (!tutor) throw new Error("Tutor not found");
+
+  const timeSlots = tutor.timeSlots as any;
+  const dayKey = day.toLowerCase().slice(0, 3);
+
+  const targetSlot = timeSlots[dayKey].find((s: any) => s.id === slotId);
+  if (!targetSlot || targetSlot.isBooked) throw new Error("Slot not available");
+
+  await prisma.$transaction([
+    prisma.tutorProfile.update({
+      where: { id: tutorId },
+      data: {
+        timeSlots: {
+          ...timeSlots,
+          [dayKey]: timeSlots[dayKey].map((s: any) =>
+            s.id === slotId ? { ...s, isBooked: true } : s,
+          ),
         },
-      ],
-    },
-  });
+      },
+    }),
+    prisma.booking.create({
+      data: {
+        studentId,
+        tutorId,
+        slotId,
+        day,
+        startTime: targetSlot.start,
+        endTime: targetSlot.end,
+        amount: tutor.hourlyRate,
+      },
+    }),
+  ]);
 
-  if (conflict) {
-    throw new Error("Tutor already booked");
-  }
-
-  const start = new Date(startTime).getTime();
-  const end = new Date(endTime).getTime();
-  if (end <= start) {
-    throw new Error(
-      "Invalid time range: End time must be later than start time.",
-    );
-  }
-  const response = await prisma.booking.create({
-    data: {
-      studentId,
-      tutorId,
-      amount,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-    },
-  });
-  return response;
+  return { success: true };
 };
 
 const bookingDetails = async (id: string) => {
