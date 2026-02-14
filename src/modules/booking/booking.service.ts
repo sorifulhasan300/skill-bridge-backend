@@ -68,6 +68,8 @@ const bookingDetails = async (id: string) => {
   });
   return response;
 };
+
+
 const updateBookingStatus = async (
   bookingId: string,
   userId: string,

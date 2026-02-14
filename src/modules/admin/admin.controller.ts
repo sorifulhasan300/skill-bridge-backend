@@ -20,7 +20,7 @@ const updateUserStatus = async (
 ) => {
   try {
     const id = req.params.id;
-    const status = req.body;
+    const { status } = req.body;
     const data = await AdminServices.updateUserStatus(id as string, status);
     res.status(200).json({
       success: true,
