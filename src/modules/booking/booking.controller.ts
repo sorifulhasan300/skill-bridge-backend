@@ -39,6 +39,22 @@ const tutorBooking = async (
   }
 };
 
+const adminBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const data = await bookingService.adminBooking();
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createBooking = async (
   req: Request,
   res: Response,
@@ -118,4 +134,5 @@ export const bookingController = {
   bookingDetails,
   updateBookingStatus,
   tutorBooking,
+  adminBooking,
 };

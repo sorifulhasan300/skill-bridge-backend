@@ -18,6 +18,15 @@ const tutorBookings = async (tutorId: string) => {
   return response;
 };
 
+const adminBooking = async () => {
+  const response = await prisma.booking.findMany({
+    include: {
+      student: { select: { email: true, name: true } },
+    },
+  });
+  return response;
+};
+
 const createBooking = async (payload: {
   studentId: string;
   tutorId: string;
@@ -68,7 +77,6 @@ const bookingDetails = async (id: string) => {
   });
   return response;
 };
-
 
 const updateBookingStatus = async (
   bookingId: string,
@@ -123,4 +131,5 @@ export const bookingService = {
   bookingDetails,
   updateBookingStatus,
   tutorBookings,
+  adminBooking,
 };

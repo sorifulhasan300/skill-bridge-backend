@@ -14,6 +14,11 @@ router.get(
   middleware(UserRole.TUTOR),
   bookingController.tutorBooking,
 );
+router.get(
+  "/admin",
+  middleware(UserRole.ADMIN),
+  bookingController.adminBooking,
+);
 router.post("/", middleware(UserRole.STUDENT), bookingController.createBooking);
 router.get("/:id", bookingController.bookingDetails);
 
