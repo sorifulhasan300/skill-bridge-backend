@@ -12,7 +12,17 @@ const allUsers = async (req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 };
-
+const statistics = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await AdminServices.statistics();
+    res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 const updateUserStatus = async (
   req: Request,
   res: Response,
@@ -35,4 +45,5 @@ const updateUserStatus = async (
 export const AdminController = {
   allUsers,
   updateUserStatus,
+  statistics,
 };

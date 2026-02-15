@@ -10,7 +10,7 @@ const router: Router = Router();
 router.use("/api/tutors", TutorRoute);
 router.use("/api/student", TutorRoute);
 router.use("/api/category", categoryRouter);
-router.use("/api/admin/users", AdminRoutes);
+router.use("/api/admin", AdminRoutes);
 router.use("/api/bookings", BookingRoutes);
 router.use("/api/review", ReviewRouter);
 
