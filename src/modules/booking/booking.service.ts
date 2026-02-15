@@ -27,7 +27,7 @@ const adminBooking = async () => {
   return response;
 };
 
-export const createBooking = async (payload: {
+const createBooking = async (payload: {
   tutorId: string;
   day: string;
   slotId: string;

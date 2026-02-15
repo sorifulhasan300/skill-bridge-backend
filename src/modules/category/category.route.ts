@@ -12,7 +12,7 @@ router.patch(
 
 router.get(
   "/",
-  middleware(UserRole.ADMIN, UserRole.TUTOR),
+
   CategoryController.getCategories,
 );
 router.delete(
