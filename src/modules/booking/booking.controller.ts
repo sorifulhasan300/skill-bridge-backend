@@ -24,7 +24,6 @@ const tutorBooking = async (
 ) => {
   try {
     const tutorId = req.user?.id;
-    console.log("tutorbooking ", tutorId);
 
     if (!tutorId) {
       return res.status(400).json({ message: "Tutor id not found" });
@@ -103,7 +102,6 @@ const updateBookingStatus = async (
   const userId = req.user?.id;
   const bookingId = req.params.id;
   const { status: newStatus } = req.body;
-  console.log(userId, bookingId, newStatus);
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }

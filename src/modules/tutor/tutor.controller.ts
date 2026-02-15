@@ -114,9 +114,7 @@ const getTutorProfile = async (
   next: NextFunction,
 ) => {
   try {
-    console.log("this is the getTutorProfile");
     const id = req.user?.id;
-    console.log("userid", id);
     const data = await TutorService.getTutorProfile(id as string);
     res.status(200).json({
       success: true,

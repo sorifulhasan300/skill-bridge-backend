@@ -11,7 +11,6 @@ const updateCategory = async (
   const isExist = await prisma.category.findUnique({
     where: { id },
   });
-  console.log(payload);
   if (!isExist) {
     throw new Error("Category not found!");
   }

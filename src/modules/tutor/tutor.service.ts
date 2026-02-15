@@ -213,7 +213,6 @@ const updateTutorProfile = async (
   },
 ) => {
   const { title, bio, hourlyRate, categories, experience, timeSlots } = payload;
-  console.log("time slot", timeSlots);
   const existProfile = await prisma.tutorProfile.findUnique({
     where: {
       userId: id,

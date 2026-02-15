@@ -10,7 +10,6 @@ const bookings = async (studentId: string) => {
 };
 
 const tutorBookings = async (tutorId: string) => {
-  console.log(tutorId);
   const response = await prisma.booking.findMany({
     where: { tutor: { userId: tutorId } },
     include: { student: { select: { email: true, name: true } } },
@@ -88,7 +87,6 @@ const updateBookingStatus = async (
   userId: string,
   newStatus: BookingStatus,
 ) => {
-  console.log(newStatus);
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: { tutor: true },
@@ -136,7 +134,6 @@ const attendBooking = async (
   userId: string,
   isAttending: boolean,
 ) => {
-  console.log(isAttending, bookingId, userId);
   const booking = await prisma.booking.findFirst({
     where: {
       id: bookingId,
