@@ -80,7 +80,6 @@ model Review {
 
   createdAt DateTime @default(now())
 
-  @@unique([tutorId, studentId])
 }
 
 model Booking {

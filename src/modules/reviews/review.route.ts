@@ -4,6 +4,10 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 
-router.post("/", middleware(UserRole.STUDENT), ReviewController.postReview);
+router.post(
+  "/",
+  middleware(UserRole.STUDENT),
+  ReviewController.postReviewAndCloseBooking,
+);
 
 export const ReviewRouter = router;

@@ -1,75 +1,77 @@
 import { TutorStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
-const allTutors = async (queries: {
-  search?: string;
-  categories?: string;
-  minRate?: string | number;
-  maxRate?: string | number;
-}) => {
-  const { search, categories, minRate, maxRate } = queries;
-  const where: any = {};
-  if (search) {
-    where.OR = [
-      {
-        bio: {
-          contains: search,
-          mode: "insensitive",
-        },
-      },
-      {
-        user: {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      },
-    ];
-  }
+export const allTutors = async (query: any) => {
+  const {
+    searchTerm,
+    rating,
+    minPrice,
+    maxPrice,
+    category,
+    page = 1,
+    limit = 10,
+  } = query;
+  const skip = (Number(page) - 1) * Number(limit);
 
-  // filter by categories
-  if (categories?.length) {
-    const categoryIds = categories.split(",");
-    where.categories = {
+  const whereConditions: any = {
+    user: { status: "ACTIVE" },
+  };
+
+  if (category && category !== "all") {
+    whereConditions.categories = {
       some: {
-        categoryId: {
-          in: categoryIds,
+        category: {
+          name: category,
         },
       },
     };
   }
 
-  //filter by hourly rate
-  if (minRate || maxRate) {
-    where.hourlyRate = {};
-    if (minRate) where.hourlyRate.gte = Number(minRate);
-    if (maxRate) where.hourlyRate.lte = Number(maxRate);
+  if (searchTerm) {
+    whereConditions.OR = [
+      { title: { contains: searchTerm, mode: "insensitive" } },
+      { bio: { contains: searchTerm, mode: "insensitive" } },
+      { user: { name: { contains: searchTerm, mode: "insensitive" } } },
+    ];
   }
-  const tutors = await prisma.tutorProfile.findMany({
-    where,
+
+  if (rating) {
+    whereConditions.averageRating = {
+      gte: Number(rating),
+    };
+  }
+
+  if (minPrice || maxPrice) {
+    whereConditions.hourlyRate = {
+      ...(minPrice && { gte: Number(minPrice) }),
+      ...(maxPrice && { lte: Number(maxPrice) }),
+    };
+  }
+
+  const result = await prisma.tutorProfile.findMany({
+    where: whereConditions,
     include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          status: true,
-          image: true,
-        },
-      },
-      categories: {
-        include: {
-          category: {
-            select: {
-              name: true,
-              icon: true,
-            },
-          },
-        },
-      },
+      user: true,
+      reviews: true,
+    },
+    skip,
+    take: Number(limit),
+    orderBy: {
+      createdAt: "desc",
     },
   });
-  return tutors;
+
+  const total = await prisma.tutorProfile.count({ where: whereConditions });
+
+  return {
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPage: Math.ceil(total / Number(limit)),
+    },
+    data: result,
+  };
 };
 
 const featuredTutors = async () => {

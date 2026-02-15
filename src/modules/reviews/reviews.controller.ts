@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { ReviewService } from "./reviews.service";
 
-const postReview = async (req: Request, res: Response, next: NextFunction) => {
+const postReviewAndCloseBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const payload = req.body;
   try {
-    await ReviewService.postReview(payload);
+    await ReviewService.postReviewAndCloseBooking(payload);
     res.status(201).json({
       success: true,
       message: "Review successfully created",
@@ -15,5 +19,5 @@ const postReview = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const ReviewController = {
-  postReview,
+  postReviewAndCloseBooking,
 };
