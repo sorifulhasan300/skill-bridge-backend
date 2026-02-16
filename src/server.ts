@@ -4,8 +4,7 @@ const PORT = process.env.PORT || 5000;
 async function main() {
   try {
     await prisma.$connect();
-    app.listen(PORT, () => {
-    });
+    app.listen(PORT, () => {});
   } catch (error) {
     await prisma.$disconnect();
     process.exit(1);
