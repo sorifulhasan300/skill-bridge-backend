@@ -17,7 +17,7 @@ router.get(
 router.get(
   "/admin",
   middleware(UserRole.ADMIN),
-  bookingController.adminBooking,
+  bookingController.adminBookingManagement,
 );
 router.post("/", middleware(UserRole.STUDENT), bookingController.createBooking);
 router.get("/:id", bookingController.bookingDetails);

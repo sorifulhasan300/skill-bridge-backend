@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { bookingService } from "./booking.service";
+import { parseQueryParams } from "../../lib/parse-query-params";
 
 const bookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -7,10 +8,20 @@ const bookings = async (req: Request, res: Response, next: NextFunction) => {
     if (!studentId) {
       return res.status(400).json({ message: "Student id not found" });
     }
-    const data = await bookingService.bookings(studentId as string);
+    const queryOptions = parseQueryParams(req.query);
+    const result = await bookingService.bookings(
+      studentId as string,
+      queryOptions,
+    );
     res.status(200).json({
       success: true,
-      data: data,
+      data: result.data,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     });
   } catch (error) {
     next(error);
@@ -28,26 +39,43 @@ const tutorBooking = async (
     if (!tutorId) {
       return res.status(400).json({ message: "Tutor id not found" });
     }
-    const data = await bookingService.tutorBookings(tutorId as string);
+    const queryOptions = parseQueryParams(req.query);
+    const result = await bookingService.tutorBookings(
+      tutorId as string,
+      queryOptions,
+    );
     res.status(200).json({
       success: true,
-      data: data,
+      data: result.data,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-const adminBooking = async (
+const adminBookingManagement = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const data = await bookingService.adminBooking();
+    const queryOptions = parseQueryParams(req.query);
+    const result = await bookingService.adminBookingManagement(queryOptions);
     res.status(200).json({
       success: true,
-      data: data,
+      data: result.data,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     });
   } catch (error) {
     next(error);
@@ -158,6 +186,6 @@ export const bookingController = {
   bookingDetails,
   updateBookingStatus,
   tutorBooking,
-  adminBooking,
+  adminBookingManagement,
   attendBooking,
 };

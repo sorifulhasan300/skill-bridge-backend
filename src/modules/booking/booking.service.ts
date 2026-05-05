@@ -1,29 +1,105 @@
 import { BookingStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../lib/query-builder";
+import { QueryOptions, QueryResult } from "../../types/query.types";
 
-const bookings = async (studentId: string) => {
-  const response = await prisma.booking.findMany({
-    where: { studentId },
-    include: { tutor: true },
-  });
-  return response;
+const bookings = async (studentId: string, queryOptions?: QueryOptions) => {
+  console.log("Received query options:", queryOptions);
+  const queryBuilder = new QueryBuilder(prisma.booking);
+
+  // Default filters and includes for student view
+  queryBuilder.where({ studentId });
+  queryBuilder.include(queryOptions?.includes || { tutor: true });
+
+  // Apply additional query options
+  if (queryOptions?.filters) {
+    queryBuilder.where(queryOptions.filters);
+  }
+
+  if (queryOptions?.search) {
+    queryBuilder.search(queryOptions.search, ["tutorName", "tutorEmail"]);
+  }
+
+  if (queryOptions?.sort) {
+    queryBuilder.orderBy(queryOptions.sort as any);
+  }
+
+  if (queryOptions?.pagination) {
+    queryBuilder.paginate(queryOptions.pagination);
+  }
+
+  return await queryBuilder.executeWithCount();
 };
 
-const tutorBookings = async (tutorId: string) => {
-  const response = await prisma.booking.findMany({
-    where: { tutor: { userId: tutorId } },
-    include: { student: { select: { email: true, name: true } } },
-  });
-  return response;
-};
+const tutorBookings = async (tutorId: string, queryOptions?: QueryOptions) => {
+  const queryBuilder = new QueryBuilder(prisma.booking);
 
-const adminBooking = async () => {
-  const response = await prisma.booking.findMany({
-    include: {
+  // Default filters and includes for tutor view
+  queryBuilder.where({ tutor: { userId: tutorId } });
+  queryBuilder.include(
+    queryOptions?.includes || {
       student: { select: { email: true, name: true } },
     },
-  });
-  return response;
+  );
+
+  // Apply additional query options
+  if (queryOptions?.filters) {
+    queryBuilder.where(queryOptions.filters);
+  }
+
+  if (queryOptions?.search) {
+    queryBuilder.search(queryOptions.search, ["studentName", "studentEmail"]);
+  }
+
+  if (queryOptions?.sort) {
+    queryBuilder.orderBy(queryOptions.sort as any);
+  }
+
+  if (queryOptions?.pagination) {
+    queryBuilder.paginate(queryOptions.pagination);
+  }
+
+  return await queryBuilder.executeWithCount();
+};
+
+const adminBookingManagement = async (
+  queryOptions?: QueryOptions,
+): Promise<QueryResult<any>> => {
+  console.log("Received query options:", queryOptions);
+
+  const queryBuilder = new QueryBuilder(prisma.booking);
+
+  // Default includes for admin view
+  const defaultIncludes = {
+    student: { select: { email: true, name: true } },
+    tutor: { include: { user: { select: { name: true, email: true } } } },
+  };
+
+  // Apply query options
+  if (queryOptions?.filters) {
+    queryBuilder.where(queryOptions.filters);
+  }
+
+  if (queryOptions?.search) {
+    queryBuilder.search(queryOptions.search, [
+      "studentName",
+      "studentEmail",
+      "tutorName",
+      "tutorEmail",
+    ]);
+  }
+
+  if (queryOptions?.sort) {
+    queryBuilder.orderBy(queryOptions.sort as any);
+  }
+
+  if (queryOptions?.pagination) {
+    queryBuilder.paginate(queryOptions.pagination);
+  }
+
+  queryBuilder.include(queryOptions?.includes || defaultIncludes);
+
+  return await queryBuilder.executeWithCount();
 };
 
 const createBooking = async (payload: {
@@ -159,6 +235,6 @@ export const bookingService = {
   bookingDetails,
   updateBookingStatus,
   tutorBookings,
-  adminBooking,
+  adminBookingManagement,
   attendBooking,
 };
