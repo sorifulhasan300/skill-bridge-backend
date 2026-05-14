@@ -3,7 +3,22 @@ import { prisma } from "../../lib/prisma";
 import QueryBuilder from "../../lib/query-builder";
 
 const bookings = async (studentId: string, query: any) => {
-  const queryBuilder = new QueryBuilder({}, query)
+  // Flatten nested filters structure
+  const flattenedQuery = { ...query };
+  if (query.filters && typeof query.filters === 'object') {
+    Object.assign(flattenedQuery, query.filters);
+    delete flattenedQuery.filters;
+  }
+
+  // Handle nested sort parameters if present
+  if (query.sort && typeof query.sort === 'object') {
+    flattenedQuery.sort = Object.values(query.sort)[0] as string;
+  }
+  if (query.sortOrder && typeof query.sortOrder === 'object') {
+    flattenedQuery.sortOrder = Object.values(query.sortOrder)[0] as string;
+  }
+
+  const queryBuilder = new QueryBuilder({}, flattenedQuery)
     .search(["tutorName", "tutorEmail"])
     .filter()
     .sort()
@@ -46,7 +61,22 @@ const bookings = async (studentId: string, query: any) => {
 };
 
 const tutorBookings = async (tutorId: string, query: any) => {
-  const queryBuilder = new QueryBuilder({}, query)
+  // Flatten nested filters structure
+  const flattenedQuery = { ...query };
+  if (query.filters && typeof query.filters === 'object') {
+    Object.assign(flattenedQuery, query.filters);
+    delete flattenedQuery.filters;
+  }
+
+  // Handle nested sort parameters if present
+  if (query.sort && typeof query.sort === 'object') {
+    flattenedQuery.sort = Object.values(query.sort)[0] as string;
+  }
+  if (query.sortOrder && typeof query.sortOrder === 'object') {
+    flattenedQuery.sortOrder = Object.values(query.sortOrder)[0] as string;
+  }
+
+  const queryBuilder = new QueryBuilder({}, flattenedQuery)
     .search(["studentName", "studentEmail"])
     .filter()
     .sort()
@@ -87,7 +117,22 @@ const tutorBookings = async (tutorId: string, query: any) => {
 };
 
 const adminBookingManagement = async (query: any) => {
-  const queryBuilder = new QueryBuilder({}, query)
+  // Flatten nested filters structure
+  const flattenedQuery = { ...query };
+  if (query.filters && typeof query.filters === 'object') {
+    Object.assign(flattenedQuery, query.filters);
+    delete flattenedQuery.filters;
+  }
+
+  // Handle nested sort parameters if present
+  if (query.sort && typeof query.sort === 'object') {
+    flattenedQuery.sort = Object.values(query.sort)[0] as string;
+  }
+  if (query.sortOrder && typeof query.sortOrder === 'object') {
+    flattenedQuery.sortOrder = Object.values(query.sortOrder)[0] as string;
+  }
+
+  const queryBuilder = new QueryBuilder({}, flattenedQuery)
     .search(["studentName", "studentEmail", "tutorName", "tutorEmail"])
     .filter()
     .sort()

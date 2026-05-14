@@ -3,7 +3,6 @@ import { prisma } from "../../lib/prisma";
 import QueryBuilder from "../../lib/query-builder";
 
 const allUsers = async (query: any) => {
-  console.log('all users')
   debugger
   const queryBuilder = new QueryBuilder({}, query)
     .search(["name", "email"])
