@@ -2,8 +2,7 @@ import { UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import QueryBuilder from "../../lib/query-builder";
 
-const allUsers = async (query: any) => {
-  debugger
+const manageUsers = async (query: any) => {
   const queryBuilder = new QueryBuilder({}, query)
     .search(["name", "email"])
     .filter()
@@ -11,13 +10,17 @@ const allUsers = async (query: any) => {
     .paginate()
     .fields();
 
-  // Apply role filter manually since it's specific to this query
-  queryBuilder.modelQuery.where = {
-    ...queryBuilder.modelQuery.where,
-    role: {
-      in: ["TUTOR", "STUDENT"],
-    },
-  };
+  // Apply role filter - if role parameter provided, filter by specific role(s)
+  // otherwise show all roles (including ADMIN)
+  if (query.role) {
+    const roles = Array.isArray(query.role) ? query.role : [query.role];
+    queryBuilder.modelQuery.where = {
+      ...queryBuilder.modelQuery.where,
+      role: {
+        in: roles,
+      },
+    };
+  }
 
   const [data, total] = await Promise.all([
     prisma.user.findMany(queryBuilder.modelQuery),
@@ -104,7 +107,7 @@ const updateUserStatus = async (id: string, status: UserStatus) => {
 };
 
 export const AdminServices = {
-  allUsers,
+  manageUsers,
   updateUserStatus,
   statistics,
 };

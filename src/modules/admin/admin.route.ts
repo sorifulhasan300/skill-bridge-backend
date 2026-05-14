@@ -4,7 +4,7 @@ import { middleware, UserRole } from "../../middlewares/auth.middleware";
 
 const router: Router = Router();
 
-router.get("/users", middleware(UserRole.ADMIN), AdminController.allUsers);
+router.get("/users", middleware(UserRole.ADMIN), AdminController.manageUsers);
 router.get(
   "/statistics",
   middleware(UserRole.ADMIN),

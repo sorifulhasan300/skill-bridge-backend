@@ -4,8 +4,8 @@ import catchAsync from "../../utils/catch.async";
 import sendResponse from "../../utils/send.response";
 
 
-const allUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const response = await AdminServices.allUsers(req.query);
+const manageUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const response = await AdminServices.manageUsers(req.query);
   sendResponse(res, {
     success: true,
     message: "Users retrieved successfully",
@@ -45,7 +45,7 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response, next: Ne
 
 
 export const AdminController = {
-  allUsers,
+  manageUsers,
   updateUserStatus,
   statistics,
 };
