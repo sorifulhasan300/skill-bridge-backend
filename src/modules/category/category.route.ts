@@ -12,7 +12,6 @@ router.patch(
 
 router.get(
   "/",
-
   CategoryController.getCategories,
 );
 router.delete(

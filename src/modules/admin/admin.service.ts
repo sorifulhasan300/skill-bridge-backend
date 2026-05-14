@@ -1,29 +1,65 @@
 import { UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import QueryBuilder from "../../lib/query-builder";
 
-const allUsers = async () => {
-  const users = await prisma.user.findMany({
-    where: {
-      role: {
-        in: ["TUTOR", "STUDENT"],
-      },
+const allUsers = async (query: any) => {
+  console.log('all users')
+  debugger
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["name", "email"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  // Apply role filter manually since it's specific to this query
+  queryBuilder.modelQuery.where = {
+    ...queryBuilder.modelQuery.where,
+    role: {
+      in: ["TUTOR", "STUDENT"],
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      status: true,
-      image: true,
-      role: true,
-      createdAt: true,
+  };
+
+  const [data, total] = await Promise.all([
+    prisma.user.findMany(queryBuilder.modelQuery),
+    prisma.user.count({ where: queryBuilder.modelQuery.where })
+  ]);
+
+  const users = data.map((user: any) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    status: user.status,
+    image: user.image,
+    role: user.role,
+    createdAt: user.createdAt,
+  }));
+
+  return {
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return users;
+    data: users,
+  };
 };
-const statistics = async () => {
+const statistics = async (query: any) => {
+  const queryBuilder = new QueryBuilder(prisma.booking, query)
+    .filter()
+    .sort()
+    .paginate();
+
+  // Get recent bookings with query builder
+  const recentBookingsQuery = {
+    ...queryBuilder.modelQuery,
+    take: 5,
+    include: {
+      student: { select: { name: true } },
+      tutor: { select: { user: { select: { name: true } } } },
+    },
+  };
+
   const [
     totalUsers,
     totalTutors,
@@ -46,14 +82,7 @@ const statistics = async () => {
       _count: true,
     }),
 
-    prisma.booking.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        student: { select: { name: true } },
-        tutor: { select: { user: { select: { name: true } } } },
-      },
-    }),
+    prisma.booking.findMany(recentBookingsQuery),
   ]);
 
   return {

@@ -1,24 +1,27 @@
 import { TutorStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import QueryBuilder from "../../lib/query-builder";
 
 export const allTutors = async (query: any) => {
-  const {
-    searchTerm,
-    rating,
-    minPrice,
-    maxPrice,
-    category,
-    page = 1,
-    limit = 10,
-  } = query;
-  const skip = (Number(page) - 1) * Number(limit);
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["title", "bio"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
 
-  const whereConditions: any = {
+  // Apply tutor-specific filters manually
+  const { category, rating } = query;
+  
+  // Base where conditions
+  queryBuilder.modelQuery.where = {
+    ...queryBuilder.modelQuery.where,
     user: { status: "ACTIVE" },
   };
 
+  // Category filter
   if (category && category !== "all") {
-    whereConditions.categories = {
+    queryBuilder.modelQuery.where.categories = {
       some: {
         category: {
           name: category,
@@ -27,50 +30,32 @@ export const allTutors = async (query: any) => {
     };
   }
 
-  if (searchTerm) {
-    whereConditions.OR = [
-      { title: { contains: searchTerm, mode: "insensitive" } },
-      { bio: { contains: searchTerm, mode: "insensitive" } },
-      { user: { name: { contains: searchTerm, mode: "insensitive" } } },
-    ];
-  }
-
+  // Rating filter
   if (rating) {
-    whereConditions.averageRating = {
+    queryBuilder.modelQuery.where.averageRating = {
       gte: Number(rating),
     };
   }
 
-  if (minPrice || maxPrice) {
-    whereConditions.hourlyRate = {
-      ...(minPrice && { gte: Number(minPrice) }),
-      ...(maxPrice && { lte: Number(maxPrice) }),
-    };
-  }
+  // Add includes
+  queryBuilder.modelQuery.include = {
+    user: true,
+    reviews: true,
+  };
 
-  const result = await prisma.tutorProfile.findMany({
-    where: whereConditions,
-    include: {
-      user: true,
-      reviews: true,
-    },
-    skip,
-    take: Number(limit),
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  const total = await prisma.tutorProfile.count({ where: whereConditions });
+  const [data, total] = await Promise.all([
+    prisma.tutorProfile.findMany(queryBuilder.modelQuery),
+    prisma.tutorProfile.count({ where: queryBuilder.modelQuery.where })
+  ]);
 
   return {
     meta: {
-      page: Number(page),
-      limit: Number(limit),
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
       total,
-      totalPage: Math.ceil(total / Number(limit)),
+      totalPage: Math.ceil(total / (Number(query.limit) || 10)),
     },
-    data: result,
+    data,
   };
 };
 

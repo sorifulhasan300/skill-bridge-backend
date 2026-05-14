@@ -1,16 +1,23 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
-// If your Prisma file is located elsewhere, you can change the path
+
+const isProduction = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  baseURL: process.env.BASE_URL || "http://localhost:5000",
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: [process.env.TRUSTED_URL || "http://localhost:3000"],
+  trustedOrigins: [
+    "https://skill-bridge-frontend-amber.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:3000",
+  ],
+
   user: {
     additionalFields: {
       role: {
@@ -32,15 +39,27 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      maxAge: 5 * 60,
     },
   },
   advanced: {
-    cookiePrefix: "better-auth",
-    useSecureCookies: process.env.NODE_ENV === "production",
-    crossSubDomainCookies: {
-      enabled: false,
+    cookies: {
+      session_token: {
+        name: "better-auth.session_token",
+        attributes: {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? "none" : "lax",
+        },
+      },
+      state: {
+        name: "better-auth.state",
+        attributes: {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? "none" : "lax",
+        },
+      },
     },
-    disableCSRFCheck: true, // Allow requests without Origin header (Postman, mobile apps, etc.)
   },
 });

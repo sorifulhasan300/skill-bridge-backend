@@ -1,150 +1,117 @@
-// lib/query-builder.ts
+class QueryBuilder<T> {
+  public modelQuery: any;
+  public query: Record<string, any>;
 
-import {
-  PaginationOptions,
-  QueryResult,
-  SortOption,
-} from "../types/query.types";
-
-export class QueryBuilder {
-  private model: any;
-  private query: any = {};
-
-  constructor(model: any) {
-    this.model = model;
+  constructor(modelQuery: any, query: Record<string, any> = {}) {
+    this.modelQuery = modelQuery;
+    this.query = query;
   }
 
-  where(filters: Record<string, any>): this {
-    if (!this.query.where) this.query.where = {};
+  search(searchableFields: string[]) {
+    const searchTerm = this.query?.searchTerm;
+    if (searchTerm) {
+      this.modelQuery = {
+        ...this.modelQuery,
+        where: {
+          ...this.modelQuery.where,
+          OR: searchableFields.map((field) => ({
+            [field]: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          })),
+        },
+      };
+    }
+    return this;
+  }
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value === undefined || value === null || value === "") return;
+  filter() {
+    const queryObj = { ...this.query };
+    const excludeFields = [
+      "searchTerm",
+      "sort",
+      "sortOrder",
+      "limit",
+      "page",
+      "fields",
+    ];
+    excludeFields.forEach((el) => delete queryObj[el]);
 
-      if (key === "status") {
-        // Accept both string and array
-        this.query.where[key] = Array.isArray(value) ? { in: value } : value;
-      } else if (key === "amount" && typeof value === "object") {
-        this.query.where[key] = value; // { gte, lte }
-      } else if (key === "createdAt" && typeof value === "object") {
-        this.query.where[key] = value; // { gte, lte }
-      } else if (key === "tutorName") {
-        this.query.where.tutor = {
-          user: { name: { contains: value, mode: "insensitive" } },
-        };
-      } else if (key === "tutorEmail") {
-        this.query.where.tutor = {
-          user: { email: { contains: value, mode: "insensitive" } },
-        };
-      } else if (key === "studentName") {
-        // student has name/email directly — no nested user relation
-        this.query.where.student = {
-          name: { contains: value, mode: "insensitive" },
-        };
-      } else if (key === "studentEmail") {
-        this.query.where.student = {
-          email: { contains: value, mode: "insensitive" },
-        };
-      } else {
-        this.query.where[key] = value;
+    // Handle range filtering (e.g. price, stock)
+    // Query parameter eivabe thakle: ?min_price=100&max_price=500
+    const filterConditions: any = {};
+    Object.keys(queryObj).forEach((key) => {
+      if (key.includes("min_") || key.includes("max_")) {
+        const actualField = key.split("_")[1];
+        const isMin = key.includes("min_");
+
+        if (actualField) {
+          filterConditions[actualField] = {
+            ...filterConditions[actualField],
+            [isMin ? "gte" : "lte"]: Number(queryObj[key]),
+          };
+        }
+        delete queryObj[key];
       }
     });
 
+    this.modelQuery = {
+      ...this.modelQuery,
+      where: {
+        ...this.modelQuery.where,
+        ...queryObj,
+        ...filterConditions,
+      },
+    };
+
     return this;
   }
 
-  search(searchTerm: string, searchFields: string[] = []): this {
-    if (!searchTerm || !searchFields.length) return this;
-    if (!this.query.where) this.query.where = {};
+  //sorting
+  sort() {
+    let sort = this.query?.sort as string;
+    let sortOrder = this.query?.sortOrder as string;
+    
+    sort = sort || "createdAt";
+    sortOrder = sortOrder || "desc";
 
-    const searchConditions = searchFields.map((field) => {
-      if (field === "tutorName") {
-        return {
-          tutor: {
-            user: { name: { contains: searchTerm, mode: "insensitive" } },
-          },
-        };
-      } else if (field === "tutorEmail") {
-        return {
-          tutor: {
-            user: { email: { contains: searchTerm, mode: "insensitive" } },
-          },
-        };
-      } else if (field === "studentName") {
-        // ✅ student → name directly (no user nesting)
-        return {
-          student: { name: { contains: searchTerm, mode: "insensitive" } },
-        };
-      } else if (field === "studentEmail") {
-        // ✅ student → email directly (no user nesting)
-        return {
-          student: { email: { contains: searchTerm, mode: "insensitive" } },
-        };
-      } else {
-        return { [field]: { contains: searchTerm, mode: "insensitive" } };
-      }
-    });
-
-    this.query.where.OR = searchConditions;
+    this.modelQuery = {
+      ...this.modelQuery,
+      orderBy: {
+        [sort]: sortOrder,
+      },
+    };
     return this;
   }
 
-  // sort এখন SortOption[] — { field, direction }[]
-  orderBy(sortOptions: SortOption[]): this {
-    if (sortOptions?.length > 0) {
-      this.query.orderBy = sortOptions.map(({ field, direction }) => ({
-        [field]: direction,
-      }));
+  //  pagination
+  paginate() {
+    const page = Number(this.query?.page) || 1;
+    const limit = Number(this.query?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    this.modelQuery = {
+      ...this.modelQuery,
+      skip,
+      take: limit,
+    };
+    return this;
+  }
+
+  // specific page selection
+  fields() {
+    if (this.query?.fields) {
+      const fields = (this.query.fields as string)
+        .split(",")
+        .reduce((acc: any, field) => {
+          acc[field.trim()] = true;
+          return acc;
+        }, {});
+      this.modelQuery.select = fields;
     }
-    return this;
-  }
-
-  paginate(options: PaginationOptions): this {
-    const { page, limit, offset } = options;
-    if (limit) this.query.take = limit;
-    if (offset !== undefined) {
-      this.query.skip = offset;
-    } else if (page && limit) {
-      this.query.skip = (page - 1) * limit;
-    }
-    return this;
-  }
-
-  include(includes: Record<string, boolean | object>): this {
-    if (includes && Object.keys(includes).length > 0) {
-      this.query.include = includes;
-    }
-    return this;
-  }
-
-  async execute(): Promise<any[]> {
-    return await this.model.findMany(this.query);
-  }
-
-  async executeWithCount(): Promise<QueryResult<any>> {
-    const [data, total] = await Promise.all([
-      this.model.findMany(this.query),
-      this.model.count({ where: this.query.where }),
-    ]);
-
-    const result: QueryResult<any> = { data, total };
-
-    if (this.query.take) {
-      result.limit = this.query.take;
-      result.totalPages = Math.ceil(total / this.query.take);
-      if (this.query.skip !== undefined) {
-        result.page = Math.floor(this.query.skip / this.query.take) + 1;
-      }
-    }
-
-    return result;
-  }
-
-  getQuery(): any {
-    return this.query;
-  }
-
-  reset(): this {
-    this.query = {};
     return this;
   }
 }
+
+export default QueryBuilder;

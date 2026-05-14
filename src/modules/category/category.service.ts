@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import QueryBuilder from "../../lib/query-builder";
 
 const createCategory = async (payload: any) => {
   const data = await prisma.category.create({ data: payload });
@@ -21,13 +22,27 @@ const updateCategory = async (
     data: payload,
   });
 };
-const getCategories = async (query: string) => {
-  const data = await prisma.category.findMany({
-    where: {
-      name: { contains: query, mode: "insensitive" },
+const getCategories = async (query: any) => {
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["name"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [data, total] = await Promise.all([
+    prisma.category.findMany(queryBuilder.modelQuery),
+    prisma.category.count({ where: queryBuilder.modelQuery.where })
+  ]);
+
+  return {
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
     },
-  });
-  return data;
+    data,
+  };
 };
 
 const deleteCategories = async (catId: string) => {

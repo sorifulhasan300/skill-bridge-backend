@@ -1,105 +1,132 @@
 import { BookingStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { QueryBuilder } from "../../lib/query-builder";
-import { QueryOptions, QueryResult } from "../../types/query.types";
+import QueryBuilder from "../../lib/query-builder";
 
-const bookings = async (studentId: string, queryOptions?: QueryOptions) => {
-  console.log("Received query options:", queryOptions);
-  const queryBuilder = new QueryBuilder(prisma.booking);
+const bookings = async (studentId: string, query: any) => {
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["tutorName", "tutorEmail"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
 
-  // Default filters and includes for student view
-  queryBuilder.where({ studentId });
-  queryBuilder.include(queryOptions?.includes || { tutor: true });
-
-  // Apply additional query options
-  if (queryOptions?.filters) {
-    queryBuilder.where(queryOptions.filters);
-  }
-
-  if (queryOptions?.search) {
-    queryBuilder.search(queryOptions.search, ["tutorName", "tutorEmail"]);
-  }
-
-  if (queryOptions?.sort) {
-    queryBuilder.orderBy(queryOptions.sort as any);
-  }
-
-  if (queryOptions?.pagination) {
-    queryBuilder.paginate(queryOptions.pagination);
-  }
-
-  return await queryBuilder.executeWithCount();
-};
-
-const tutorBookings = async (tutorId: string, queryOptions?: QueryOptions) => {
-  const queryBuilder = new QueryBuilder(prisma.booking);
-
-  // Default filters and includes for tutor view
-  queryBuilder.where({ tutor: { userId: tutorId } });
-  queryBuilder.include(
-    queryOptions?.includes || {
-      student: { select: { email: true, name: true } },
-    },
-  );
-
-  // Apply additional query options
-  if (queryOptions?.filters) {
-    queryBuilder.where(queryOptions.filters);
-  }
-
-  if (queryOptions?.search) {
-    queryBuilder.search(queryOptions.search, ["studentName", "studentEmail"]);
-  }
-
-  if (queryOptions?.sort) {
-    queryBuilder.orderBy(queryOptions.sort as any);
-  }
-
-  if (queryOptions?.pagination) {
-    queryBuilder.paginate(queryOptions.pagination);
-  }
-
-  return await queryBuilder.executeWithCount();
-};
-
-const adminBookingManagement = async (
-  queryOptions?: QueryOptions,
-): Promise<QueryResult<any>> => {
-  console.log("Received query options:", queryOptions);
-
-  const queryBuilder = new QueryBuilder(prisma.booking);
-
-  // Default includes for admin view
-  const defaultIncludes = {
-    student: { select: { email: true, name: true } },
-    tutor: { include: { user: { select: { name: true, email: true } } } },
+  // Apply student filter manually since it's specific to this query
+  queryBuilder.modelQuery.where = {
+    ...queryBuilder.modelQuery.where,
+    studentId,
   };
 
-  // Apply query options
-  if (queryOptions?.filters) {
-    queryBuilder.where(queryOptions.filters);
-  }
+  // Add includes for tutor information
+  queryBuilder.modelQuery.include = {
+    tutor: {
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    },
+  };
 
-  if (queryOptions?.search) {
-    queryBuilder.search(queryOptions.search, [
-      "studentName",
-      "studentEmail",
-      "tutorName",
-      "tutorEmail",
-    ]);
-  }
+  const [data, total] = await Promise.all([
+    prisma.booking.findMany(queryBuilder.modelQuery),
+    prisma.booking.count({ where: queryBuilder.modelQuery.where })
+  ]);
 
-  if (queryOptions?.sort) {
-    queryBuilder.orderBy(queryOptions.sort as any);
-  }
+  return {
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
+    },
+    data,
+  };
+};
 
-  if (queryOptions?.pagination) {
-    queryBuilder.paginate(queryOptions.pagination);
-  }
+const tutorBookings = async (tutorId: string, query: any) => {
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["studentName", "studentEmail"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
 
-  queryBuilder.include(queryOptions?.includes || defaultIncludes);
+  // Apply tutor filter manually since it's specific to this query
+  queryBuilder.modelQuery.where = {
+    ...queryBuilder.modelQuery.where,
+    tutor: {
+      userId: tutorId,
+    },
+  };
 
-  return await queryBuilder.executeWithCount();
+  // Add includes for student information
+  queryBuilder.modelQuery.include = {
+    student: {
+      select: {
+        name: true,
+        email: true,
+      },
+    },
+  };
+
+  const [data, total] = await Promise.all([
+    prisma.booking.findMany(queryBuilder.modelQuery),
+    prisma.booking.count({ where: queryBuilder.modelQuery.where })
+  ]);
+
+  return {
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
+    },
+    data,
+  };
+};
+
+const adminBookingManagement = async (query: any) => {
+  const queryBuilder = new QueryBuilder({}, query)
+    .search(["studentName", "studentEmail", "tutorName", "tutorEmail"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  // Add includes for admin view
+  queryBuilder.modelQuery.include = {
+    student: {
+      select: {
+        name: true,
+        email: true,
+      },
+    },
+    tutor: {
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    },
+  };
+
+  const [data, total] = await Promise.all([
+    prisma.booking.findMany(queryBuilder.modelQuery),
+    prisma.booking.count({ where: queryBuilder.modelQuery.where })
+  ]);
+
+  return {
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
+    },
+    data,
+  };
 };
 
 const createBooking = async (payload: {
