@@ -62,7 +62,7 @@ export const allTutors = async (query: any) => {
 const featuredTutors = async () => {
   const response = await prisma.tutorProfile.findMany({
     where: { isFeatured: true },
-    take: 6,
+    take: 8,
     include: {
       user: {
         select: {
