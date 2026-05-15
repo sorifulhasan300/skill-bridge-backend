@@ -3,7 +3,16 @@ import { prisma } from "../../lib/prisma";
 import QueryBuilder from "../../lib/query-builder";
 
 export const allTutors = async (query: any) => {
-  const queryBuilder = new QueryBuilder({}, query)
+  const { search, searchTerm, category, rating } = query;
+  const searchValue = search || searchTerm;
+
+  // Remove category and rating from query before passing to QueryBuilder
+  // to prevent them from being added as direct fields
+  const queryForBuilder = { ...query };
+  delete queryForBuilder.category;
+  delete queryForBuilder.rating;
+
+  const queryBuilder = new QueryBuilder({}, queryForBuilder)
     .search(["title", "bio"])
     .filter()
     .sort()
@@ -11,20 +20,52 @@ export const allTutors = async (query: any) => {
     .fields();
 
   // Apply tutor-specific filters manually
-  const { category, rating } = query;
-  
+
   // Base where conditions
-  queryBuilder.modelQuery.where = {
+  const baseWhere = {
     ...queryBuilder.modelQuery.where,
     user: { status: "ACTIVE" },
   };
+
+  // Add name search if search term exists
+  if (searchValue) {
+    const existingOR = queryBuilder.modelQuery.where.OR || [];
+    baseWhere.OR = [
+      ...existingOR,
+      {
+        user: {
+          name: {
+            contains: searchValue,
+            mode: "insensitive",
+          },
+        },
+      },
+      {
+        categories: {
+          some: {
+            category: {
+              name: {
+                contains: searchValue,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  queryBuilder.modelQuery.where = baseWhere;
 
   // Category filter
   if (category && category !== "all") {
     queryBuilder.modelQuery.where.categories = {
       some: {
         category: {
-          name: category,
+          name: {
+            equals: category,
+            mode: "insensitive",
+          },
         },
       },
     };
@@ -41,6 +82,11 @@ export const allTutors = async (query: any) => {
   queryBuilder.modelQuery.include = {
     user: true,
     reviews: true,
+    categories: {
+      include: {
+        category: true,
+      },
+    },
   };
 
   const [data, total] = await Promise.all([

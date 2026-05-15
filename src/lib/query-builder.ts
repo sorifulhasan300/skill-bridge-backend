@@ -8,7 +8,7 @@ class QueryBuilder<T> {
   }
 
   search(searchableFields: string[]) {
-    const searchTerm = this.query?.searchTerm;
+    const searchTerm = this.query?.searchTerm || this.query?.search;
     if (searchTerm) {
       this.modelQuery = {
         ...this.modelQuery,
@@ -30,6 +30,7 @@ class QueryBuilder<T> {
     const queryObj = { ...this.query };
     const excludeFields = [
       "searchTerm",
+      "search",
       "sort",
       "sortOrder",
       "limit",
